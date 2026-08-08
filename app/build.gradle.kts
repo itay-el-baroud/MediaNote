@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
 }
-
 android {
     namespace = "com.medianote.app"
     compileSdk = 34
@@ -27,7 +26,6 @@ android {
     buildFeatures { compose = true }
     composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
 }
-
 dependencies {
     val roomVersion = "2.6.1"
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))
