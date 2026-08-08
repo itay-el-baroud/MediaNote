@@ -28,6 +28,7 @@ import com.medianote.app.ui.screens.HomeScreen
 import com.medianote.app.ui.screens.NoteDetailScreen
 import com.medianote.app.ui.screens.RecordScreen
 import com.medianote.app.ui.screens.SettingsScreen
+import com.medianote.app.ui.screens.SplashScreen
 import com.medianote.app.ui.screens.WebViewScreen
 import com.medianote.app.ui.theme.MediaNoteTheme
 
@@ -40,21 +41,15 @@ class MainActivity : ComponentActivity() {
             val darkMode by settingsManager.darkModeFlow.collectAsState(initial = true)
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route ?: "home"
+            val currentRoute = navBackStackEntry?.destination?.route ?: "splash"
             var webUrl by remember { mutableStateOf("") }
 
-            val permissions = mutableListOf(
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.READ_MEDIA_IMAGES,
-                Manifest.permission.READ_MEDIA_VIDEO
-            )
+            val permissions = mutableListOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 permissions.add(Manifest.permission.POST_NOTIFICATIONS)
             }
             val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
-            LaunchedEffect(Unit) {
-                launcher.launch(permissions.toTypedArray())
-            }
+            LaunchedEffect(Unit) { launcher.launch(permissions.toTypedArray()) }
 
             MediaNoteTheme(darkTheme = darkMode) {
                 if (currentRoute == "webview") {
@@ -63,17 +58,14 @@ class MainActivity : ComponentActivity() {
                     Scaffold(
                         bottomBar = {
                             if (currentRoute in listOf("home", "record", "settings")) {
-                                AppBottomBar(currentRoute = currentRoute, onNavigate = { route ->
-                                    navController.navigate(route) { launchSingleTop = true }
-                                })
+                                AppBottomBar(currentRoute = currentRoute, onNavigate = { route -> navController.navigate(route) { launchSingleTop = true } })
                             }
                         }
                     ) { padding ->
-                        NavHost(
-                            navController = navController,
-                            startDestination = "home",
-                            modifier = Modifier.padding(padding)
-                        ) {
+                        NavHost(navController = navController, startDestination = "splash", modifier = Modifier.padding(padding)) {
+                            composable("splash") {
+                                SplashScreen(onFinished = { navController.navigate("home") { popUpTo("splash") { inclusive = true } } })
+                            }
                             composable("home") {
                                 HomeScreen(onNavigateToAdd = { type -> navController.navigate("add/$type") })
                             }
@@ -86,20 +78,10 @@ class MainActivity : ComponentActivity() {
                             }
                             composable("detail/{id}") { backStack ->
                                 val id = backStack.arguments?.getString("id")?.toIntOrNull() ?: 0
-                                NoteDetailScreen(
-                                    noteId = id,
-                                    onBack = { navController.popBackStack() },
-                                    onOpenWeb = { url ->
-                                        webUrl = url
-                                        navController.navigate("webview")
-                                    }
-                                )
+                                NoteDetailScreen(noteId = id, onBack = { navController.popBackStack() }, onOpenWeb = { url -> webUrl = url; navController.navigate("webview") })
                             }
                             composable("settings") {
-                                SettingsScreen(onOpenWeb = { url ->
-                                    webUrl = url
-                                    navController.navigate("webview")
-                                })
+                                SettingsScreen(onOpenWeb = { url -> webUrl = url; navController.navigate("webview") })
                             }
                             composable("webview") {
                                 WebViewScreen(url = webUrl, onBack = { navController.popBackStack() })
