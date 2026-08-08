@@ -1,5 +1,9 @@
 package com.medianote.app.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,11 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,19 +47,34 @@ fun RecordScreen() {
                     Text("النوع: ${note.type}", style = MaterialTheme.typography.bodySmall)
                     val date = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(note.createdAt))
                     Text("التاريخ: $date", style = MaterialTheme.typography.bodySmall)
-                    if (note.content.isNotEmpty()) {
-                        Text(note.content.take(100), modifier = Modifier.padding(top = 8.dp))
-                    }
-                    Row {
-                        TextButton(onClick = {
-                            val link = ShareUtil.generateShareLink(note.type, note.shareId)
-                            ShareUtil.copyToClipboard(context, link)
-                        }) {
-                            Text("مشاركة - نسخ الرابط")
+                    Text(note.content.take(100), modifier = Modifier.padding(top = 8.dp))
+                    Row(modifier = Modifier.padding(top = 8.dp)) {
+                        Button(
+                            onClick = {
+                                val link = ShareUtil.generateShareLink(note.type, note.shareId)
+                                ShareUtil.copyToClipboard(context, link)
+                            },
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text("نسخ رابط المشاركة")
+                        }
+                        Button(onClick = { copyText(context, note.filePath.ifEmpty { note.content }) }) {
+                            Text("نسخ المسار")
                         }
                     }
                 }
             }
         }
+    }
+}
+
+private fun copyText(context: Context, text: String) {
+    try {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("path", text)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(context, "تم نسخ المسار", Toast.LENGTH_SHORT).show()
+    } catch (e: Exception) {
+        Toast.makeText(context, "فشل النسخ", Toast.LENGTH_SHORT).show()
     }
 }
