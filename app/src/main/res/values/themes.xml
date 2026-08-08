@@ -1,5 +1,11 @@
 <resources>
     <style name="Theme.MediaNote" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:colorControlHighlight">@color/colorControlHighlight</item>
+        <item name="android:colorControlNormal">@color/colorControlNormal</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="android:windowBackground">@color/backgroundDark</item>
     </style>
 </resources>
