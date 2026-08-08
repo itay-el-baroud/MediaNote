@@ -29,7 +29,7 @@ fun SplashScreen(onFinished: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Card(shape = RoundedCornerShape(32.dp), elevation = CardDefaults.cardElevation(8.dp), modifier = Modifier.size(120.dp)) {
-                Image(painter = painterResource(id = R.drawable.app_icon), contentDescription = null, modifier = Modifier.fillMaxSize())
+                Image(painter = painterResource(id = R.mipmap.ic_launcher), contentDescription = null, modifier = Modifier.fillMaxSize())
             }
             Spacer(modifier = Modifier.height(32.dp))
             LoadingIcon(message = "جاري تحميل التطبيق...", fullScreen = false)
