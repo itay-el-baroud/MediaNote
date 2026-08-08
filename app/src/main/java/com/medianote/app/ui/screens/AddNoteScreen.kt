@@ -1,14 +1,15 @@
 package com.medianote.app.ui.screens
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,14 +24,33 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.medianote.app.data.local.AppDatabase
 import com.medianote.app.data.local.NoteEntity
 import com.medianote.app.util.AudioRecorder
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
+
+fun copyUriToInternalStorage(context: Context, uri: Uri, fileName: String): String {
+    return try {
+        val input = context.contentResolver.openInputStream(uri) ?: return ""
+        val file = File(context.filesDir, fileName)
+        val output = FileOutputStream(file)
+        input.copyTo(output)
+        input.close()
+        output.close()
+        file.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        ""
+    }
+}
 
 @Composable
 fun AddNoteScreen(noteType: String, onFinished: () -> Unit) {
@@ -43,142 +63,84 @@ fun AddNoteScreen(noteType: String, onFinished: () -> Unit) {
     var content by remember { mutableStateOf("") }
     var filePath by remember { mutableStateOf("") }
     var isRecording by remember { mutableStateOf(false) }
-    var isPaused by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
-    var success by remember { mutableStateOf("") }
 
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { filePath = it.toString() }
+        uri?.let {
+            isLoading = true
+            val path = copyUriToInternalStorage(context, it, "img_${System.currentTimeMillis()}.jpg")
+            filePath = path
+            isLoading = false
+        }
     }
     val videoPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { filePath = it.toString() }
+        uri?.let {
+            isLoading = true
+            val path = copyUriToInternalStorage(context, it, "vid_${System.currentTimeMillis()}.mp4")
+            filePath = path
+            isLoading = false
+        }
     }
 
     Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
         Text("اضافة ملاحظة: $noteType", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("عنوان الملاحظة") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
+        OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("عنوان الملاحظة") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
         Spacer(modifier = Modifier.height(12.dp))
 
         if (noteType == "text") {
-            OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
-                label = { Text("اكتب ملاحظتك") },
-                modifier = Modifier.fillMaxWidth().height(150.dp),
-                shape = RoundedCornerShape(12.dp)
-            )
+            OutlinedTextField(value = content, onValueChange = { content = it }, label = { Text("اكتب ملاحظتك") }, modifier = Modifier.fillMaxWidth().height(150.dp), shape = RoundedCornerShape(12.dp))
         }
 
         if (noteType == "voice") {
-            Row {
-                Button(onClick = {
-                    try {
-                        val path = recorder.startRecording()
-                        if (path.isNotEmpty()) {
-                            filePath = path
-                            isRecording = true
-                            isPaused = false
-                            error = ""
-                        } else {
-                            error = "فشل بدء التسجيل تحقق من الصلاحيات"
-                        }
-                    } catch (e: Exception) {
-                        error = "خطأ في التسجيل: ${e.message}"
-                    }
-                }, enabled = !isRecording) { Text("بدء") }
-
-                Button(onClick = {
-                    recorder.pauseRecording()
-                    isPaused = true
-                }, enabled = isRecording && !isPaused, modifier = Modifier.padding(start = 8.dp)) {
-                    Text("قطع")
-                }
-
-                Button(onClick = {
-                    recorder.resumeRecording()
-                    isPaused = false
-                }, enabled = isRecording && isPaused, modifier = Modifier.padding(start = 8.dp)) {
-                    Text("استئناف")
-                }
-
-                Button(onClick = {
-                    val path = recorder.stopRecording()
-                    filePath = path
-                    isRecording = false
-                    isPaused = false
-                    success = "تم انتهاء التسجيل"
-                }, enabled = isRecording, modifier = Modifier.padding(start = 8.dp)) {
-                    Text("انتهاء")
-                }
-            }
-            if (filePath.isNotEmpty()) {
-                Text("ملف الصوت: $filePath", modifier = Modifier.padding(top = 8.dp))
+            Button(onClick = {
+                val path = recorder.startRecording()
+                if (path.isNotEmpty()) { filePath = path; isRecording = true } else { error = "فشل بدء التسجيل" }
+            }, enabled = !isRecording) { Text("بدء التسجيل") }
+            if (isRecording) {
+                Button(onClick = { filePath = recorder.stopRecording(); isRecording = false }, modifier = Modifier.padding(top = 8.dp)) { Text("انهاء التسجيل") }
             }
         }
 
         if (noteType == "image") {
-            Button(onClick = { imagePicker.launch("image/*") }) {
-                Text("اختيار صورة")
+            Button(onClick = { imagePicker.launch("image/*") }) { Text("اختيار صورة") }
+            if (filePath.isNotEmpty()) {
+                AsyncImage(model = File(filePath), contentDescription = null, modifier = Modifier.fillMaxWidth().height(200.dp).padding(top = 8.dp))
             }
         }
 
         if (noteType == "video") {
-            Button(onClick = { videoPicker.launch("video/*") }) {
-                Text("اختيار فيديو")
-            }
+            Button(onClick = { videoPicker.launch("video/*") }) { Text("اختيار فيديو") }
+            if (filePath.isNotEmpty()) { Text("تم حفظ الفيديو: ${File(filePath).name}") }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        if (error.isNotEmpty()) {
-            Text(error, color = MaterialTheme.colorScheme.error)
-        }
-        if (success.isNotEmpty()) {
-            Text(success, color = MaterialTheme.colorScheme.primary)
-        }
-
         if (isLoading) {
-            CircularProgressIndicator()
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MaterialTheme.colorScheme.primary)
+                Text("جاري التحميل...", modifier = Modifier.padding(top = 8.dp))
+            }
         }
+        if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
 
         Button(
             onClick = {
-                if (title.isEmpty()) {
-                    error = "من فضلك اكتب عنوان"
-                    return@Button
-                }
+                if (title.isEmpty()) { error = "اكتب عنوان"; return@Button }
                 isLoading = true
                 scope.launch {
                     try {
-                        val note = NoteEntity(
-                            title = title,
-                            content = if (noteType == "text") content else filePath,
-                            type = noteType,
-                            filePath = filePath,
-                            shareId = UUID.randomUUID().toString().take(8)
-                        )
+                        val note = NoteEntity(title = title, content = if (noteType == "text") content else filePath, type = noteType, filePath = filePath, shareId = UUID.randomUUID().toString().take(8))
                         db.noteDao().insert(note)
                         isLoading = false
                         onFinished()
-                    } catch (e: Exception) {
-                        isLoading = false
-                        error = "فشل الحفظ: ${e.message}"
-                    }
+                    } catch (e: Exception) { isLoading = false; error = "فشل الحفظ: ${e.message}" }
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("حفظ")
-        }
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            enabled = !isLoading
+        ) { Text("حفظ الملاحظة") }
     }
 }
