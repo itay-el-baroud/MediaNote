@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MediaNote" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.MediaNote" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#7C4DFF</item>
-        <item name="android:windowBackground">#121212</item>
     </style>
 </resources>
