@@ -94,7 +94,7 @@ fun AddNoteScreen(noteType: String, onFinished: () -> Unit) {
                     } catch (e: Exception) {
                         error = "خطأ في التسجيل: ${e.message}"
                     }
-                }, enabled = !isRecording) { Text("بدء التسجيل") }
+                }, enabled = !isRecording) { Text("بدء") }
 
                 Button(onClick = {
                     recorder.pauseRecording()
@@ -127,16 +127,14 @@ fun AddNoteScreen(noteType: String, onFinished: () -> Unit) {
 
         if (noteType == "image") {
             Button(onClick = { imagePicker.launch("image/*") }) {
-                Text("اختيار صورة من الاستوديو")
+                Text("اختيار صورة")
             }
-            if (filePath.isNotEmpty()) Text("تم اختيار صورة")
         }
 
         if (noteType == "video") {
             Button(onClick = { videoPicker.launch("video/*") }) {
-                Text("اختيار فيديو من الاستوديو")
+                Text("اختيار فيديو")
             }
-            if (filePath.isNotEmpty()) Text("تم اختيار فيديو")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -170,7 +168,6 @@ fun AddNoteScreen(noteType: String, onFinished: () -> Unit) {
                         )
                         db.noteDao().insert(note)
                         isLoading = false
-                        success = "تم حفظ الملاحظة بنجاح"
                         onFinished()
                     } catch (e: Exception) {
                         isLoading = false
@@ -181,7 +178,7 @@ fun AddNoteScreen(noteType: String, onFinished: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("حفظ الملاحظة")
+            Text("حفظ")
         }
     }
 }
