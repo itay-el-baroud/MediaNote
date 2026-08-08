@@ -4,8 +4,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -46,10 +54,25 @@ fun SettingsScreen(onOpenWeb: (String) -> Unit) {
 
         Text("روابط", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
 
-        TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/app-evaluation") }) { Text("تقييم التطبيق") }
-        TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/Terms-and-Conditions") }) { Text("الشروط والاحكام") }
-        TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/sharing") }) { Text("مشاركة التطبيق") }
-        TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/Developer") }) { Text("المطور") }
-        TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/comments") }) { Text("ارسل تعليق") }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(20.dp))
+            TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/app-evaluation") }) { Text("تقييم التطبيق") }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Info, contentDescription = null, modifier = Modifier.size(20.dp))
+            TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/Terms-and-Conditions") }) { Text("الشروط والاحكام") }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(20.dp))
+            TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/sharing") }) { Text("مشاركة التطبيق") }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(20.dp))
+            TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/Developer") }) { Text("المطور") }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Comment, contentDescription = null, modifier = Modifier.size(20.dp))
+            TextButton(onClick = { onOpenWeb("https://media-note.ct.ws/comments") }) { Text("ارسل تعليق") }
+        }
     }
 }
